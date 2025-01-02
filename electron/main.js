@@ -1,6 +1,6 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
-const isDev = require('electron-is-dev');
+const isDev = !app.isPackaged;
 const Database = require('./database');
 const UpdateHandler = require('./updater');
 
@@ -18,29 +18,22 @@ async function createWindow() {
       width: 1200,
       height: 800,
       webPreferences: {
-        nodeIntegration: false,
+        nodeIntegration: true,
         contextIsolation: true,
-        preload: path.join(__dirname, 'preload.js'),
-        sandbox: false
+        preload: path.join(__dirname, 'preload.js')
       }
     });
 
+    // Load the app
     if (isDev) {
-      console.log('Loading development URL...');
       await mainWindow.loadURL('http://localhost:3000');
       mainWindow.webContents.openDevTools();
     } else {
-      console.log('Loading production build...');
       await mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
     }
 
-    mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
-      console.error('Failed to load:', errorCode, errorDescription);
-    });
-
     // Initialize update handler
     updateHandler = new UpdateHandler(mainWindow);
-
     setupIpcHandlers();
   } catch (error) {
     console.error('Error during window creation:', error);

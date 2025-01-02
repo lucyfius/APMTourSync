@@ -1,18 +1,23 @@
 {
   "name": "toursync",
-  "version": "1.0.3",
+  "version": "1.0.4",
+  "description": "Property Tour Management System for APM",
+  "author": "APM Property Management",
   "main": "electron/main.js",
   "scripts": {
     "prestart": "npx kill-port 3000",
     "start": "concurrently -k \"cross-env BROWSER=none npm run start:react\" \"wait-on tcp:3000 && npm run start:electron\"",
     "start:react": "vite",
     "start:electron": "electron .",
+    "electron:dev": "concurrently -k \"cross-env BROWSER=none npm run start:react\" \"wait-on tcp:3000 && npm run start:electron\"",
     "build": "vite build && electron-builder",
     "preview": "vite preview"
   },
   "dependencies": {
     "@emotion/react": "^11.11.0",
     "@emotion/styled": "^11.11.0",
+    "@emotion/serialize": "^1.1.3",
+    "@emotion/babel-plugin": "^11.11.0",
     "@mui/icons-material": "^5.13.0",
     "@mui/material": "^5.13.0",
     "@mui/x-date-pickers": "^6.5.0",
@@ -31,8 +36,19 @@
     "cross-env": "^7.0.3",
     "electron": "^24.3.0",
     "electron-builder": "^24.13.3",
-    "electron-is-dev": "^2.0.0",
     "vite": "^4.3.0",
     "wait-on": "^7.0.1"
+  },
+  "build": {
+    "extends": null,
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "buildResources": "assets",
+      "output": "dist"
+    }
   }
 }
