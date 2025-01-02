@@ -62,12 +62,16 @@ export default function TourList() {
       const dateA = new Date(a.tour_time);
       const dateB = new Date(b.tour_time);
       
-      // For scheduled tours, sort by upcoming (ascending)
-      if (tabValue === 'scheduled') {
+      // Always sort by ascending date (soonest first)
+      if (!isNaN(dateA) && !isNaN(dateB)) {
         return dateA - dateB;
       }
-      // For completed, cancelled, and no-show tours, sort by most recent (descending)
-      return dateB - dateA;
+      
+      // Handle invalid dates by pushing them to the end
+      if (isNaN(dateA)) return 1;
+      if (isNaN(dateB)) return -1;
+      
+      return 0;
     });
 
   const handleTabChange = (event, newValue) => {
