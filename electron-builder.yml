@@ -1,0 +1,51 @@
+appId: com.apm.toursync
+productName: TourSync
+copyright: Copyright © 2024 APM
+
+directories:
+  output: dist
+  buildResources: build
+
+files:
+  - from: build
+    to: .
+    filter:
+      - "**/*"
+  - "package.json"
+  - "electron/**/*"
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: build/icon.ico
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: TourSync
+
+mac:
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+  category: public.app-category.business
+  icon: build/icon.icns
+
+linux:
+  target:
+    - target: AppImage
+      arch:
+        - x64
+  category: Office
+
+publish:
+  provider: github
+  owner: APM
+  repo: toursync
+  private: true 
