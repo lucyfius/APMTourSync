@@ -182,19 +182,24 @@ export default function TourForm({ open, onClose, tour, onSubmit }) {
                 onChange={(e) => {
                   let value = e.target.value;
                   
-                  // Allow direct typing but enforce format
+                  // Remove any non-digit or colon characters
                   value = value.replace(/[^\d:]/g, '');
                   
-                  // Handle hour input
+                  // Handle the input formatting
                   if (value.length === 1 || value.length === 2) {
                     const hour = parseInt(value);
-                    if (hour >= 1 && hour <= 12) {
-                      if (value.length === 2) value = `${value}:`;
+                    if (hour >= 0 && hour <= 12) {
+                      if (value.length === 2 && !value.includes(':')) {
+                        value = `${value}:`;
+                      }
                     }
+                  } else if (value.length > 2 && !value.includes(':')) {
+                    // Add colon after the first two digits if missing
+                    value = `${value.slice(0, 2)}:${value.slice(2)}`;
                   }
                   
-                  // Validate format (H:mm or HH:mm)
-                  if (value.length <= 5 && /^([1-9]|1[0-2])?(:[0-5]?[0-9]?)?$/.test(value)) {
+                  // Validate the final format (H:mm, HH:mm)
+                  if (value.length <= 5 && /^([0-9]|0[0-9]|1[0-2])?:?([0-5]?[0-9]?)?$/.test(value)) {
                     setFormData({ ...formData, tour_time: value });
                   }
                 }}
