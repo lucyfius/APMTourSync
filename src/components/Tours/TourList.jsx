@@ -11,7 +11,9 @@ import {
   TableHead,
   TableRow,
   IconButton,
-  Chip
+  Chip,
+  Tabs,
+  Tab
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -31,6 +33,7 @@ export default function TourList() {
   const [tours, setTours] = useState([]);
   const [openForm, setOpenForm] = useState(false);
   const [selectedTour, setSelectedTour] = useState(null);
+  const [tabValue, setTabValue] = useState('scheduled');
 
   useEffect(() => {
     loadTours();
@@ -48,6 +51,27 @@ export default function TourList() {
     } catch (error) {
       console.error('Error loading tours:', error);
     }
+  };
+
+  const filteredTours = tours
+    .filter(tour => {
+      const status = tour.status || 'scheduled';
+      return status === tabValue;
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.tour_time);
+      const dateB = new Date(b.tour_time);
+      
+      // For scheduled tours, sort by upcoming (ascending)
+      if (tabValue === 'scheduled') {
+        return dateA - dateB;
+      }
+      // For completed, cancelled, and no-show tours, sort by most recent (descending)
+      return dateB - dateA;
+    });
+
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
   };
 
   const handleAdd = () => {
@@ -106,6 +130,17 @@ export default function TourList() {
         </Button>
       </Box>
 
+      <Tabs
+        value={tabValue}
+        onChange={handleTabChange}
+        sx={{ mb: 3 }}
+      >
+        <Tab label="Scheduled" value="scheduled" />
+        <Tab label="Completed" value="completed" />
+        <Tab label="Cancelled" value="cancelled" />
+        <Tab label="No Show" value="no-show" />
+      </Tabs>
+
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
@@ -118,7 +153,7 @@ export default function TourList() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {tours.map((tour, index) => {
+            {filteredTours.map((tour, index) => {
               let tourDate = null;
               
               if (tour.tour_time) {
@@ -132,7 +167,7 @@ export default function TourList() {
               }
 
               const formattedDate = tourDate && !isNaN(tourDate.getTime())
-                ? format(tourDate, 'PPpp')
+                ? format(tourDate, 'PPp')
                 : 'Invalid Date';
                 
               const uniqueKey = tour._id && tour._id.$oid ? tour._id.$oid : `tour-${index}`;
@@ -153,22 +188,7 @@ export default function TourList() {
                     <IconButton onClick={() => handleEdit(tour)}>
                       <EditIcon />
                     </IconButton>
-                    <IconButton onClick={() => {
-                      console.log('Tour object:', tour);
-                      const tourId = tour._id;
-                      
-                      console.log('Tour ID debug:', {
-                        tourId,
-                        type: typeof tourId
-                      });
-                      
-                      if (!tourId || typeof tourId !== 'string') {
-                        console.error('Invalid tour ID format');
-                        return;
-                      }
-                      
-                      handleDelete(tourId);
-                    }}>
+                    <IconButton onClick={() => handleDelete(tour._id)}>
                       <DeleteIcon />
                     </IconButton>
                   </TableCell>

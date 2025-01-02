@@ -29,29 +29,36 @@ export default function DashboardView() {
   const loadDashboardData = async () => {
     try {
       const tours = await window.api.database.getTours();
+      console.log('Fetched tours:', tours);
       
       // Calculate stats
       const now = new Date();
       const stats = {
         totalTours: tours.length,
         upcomingTours: tours.filter(t => {
-          const tourDate = new Date(t.tourTime);
-          return tourDate > now && t.status === 'scheduled';
+          const tourDate = new Date(t.tour_time);
+          return !isNaN(tourDate.getTime()) && 
+                 tourDate > now && 
+                 (!t.status || t.status === 'scheduled');
         }).length,
         completedTours: tours.filter(t => t.status === 'completed').length,
         cancelledTours: tours.filter(t => t.status === 'cancelled').length
       };
       setStats(stats);
 
-      // Get recent tours - only upcoming scheduled tours
+      // Get recent tours - show all scheduled tours regardless of date
       const recent = tours
-        .filter(t => {
-          const tourDate = new Date(t.tourTime);
-          return tourDate > now && t.status === 'scheduled';
+        .filter(t => (!t.status || t.status === 'scheduled'))
+        .sort((a, b) => {
+          const dateA = new Date(a.tour_time);
+          const dateB = new Date(b.tour_time);
+          return dateB - dateA;
         })
-        .sort((a, b) => new Date(a.tourTime) - new Date(b.tourTime))
         .slice(0, 5);
+      
+      console.log('Filtered recent tours:', recent);
       setRecentTours(recent);
+      
     } catch (error) {
       console.error('Error loading dashboard data:', error);
     }
@@ -80,8 +87,19 @@ export default function DashboardView() {
             <Typography variant="h6" gutterBottom>Recent Tours</Typography>
             <List>
               {recentTours.map((tour, index) => {
-                const tourDate = new Date(tour.tourTime);
-                const formattedDate = !isNaN(tourDate.getTime()) 
+                let tourDate = null;
+                
+                if (tour.tour_time) {
+                  // Handle new format with ISO string
+                  tourDate = new Date(tour.tour_time);
+                } else if (tour.date && tour.time) {
+                  // Handle old format with separate date and time
+                  const [year, month, day] = tour.date.split('-');
+                  const [hour, minute] = tour.time.split(':');
+                  tourDate = new Date(year, month - 1, day, hour, minute);
+                }
+
+                const formattedDate = tourDate && !isNaN(tourDate.getTime())
                   ? format(tourDate, 'PPp')
                   : 'Invalid Date';
 
@@ -89,8 +107,8 @@ export default function DashboardView() {
                   <React.Fragment key={`${tour._id}-${index}`}>
                     <ListItem>
                       <ListItemText
-                        primary={tour.clientName}
-                        secondary={`${tour.propertyAddress} - ${formattedDate}`}
+                        primary={tour.client_name}
+                        secondary={`${tour.property_address} - ${formattedDate}`}
                       />
                     </ListItem>
                     {index < recentTours.length - 1 && <Divider />}

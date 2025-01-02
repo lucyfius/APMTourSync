@@ -19,6 +19,8 @@ const StyledDrawer = styled(Drawer)({
   '& .MuiDrawer-paper': {
     width: DRAWER_WIDTH,
     boxSizing: 'border-box',
+    marginTop: '32px',
+    height: 'calc(100% - 32px)'
   },
 });
 
