@@ -21,6 +21,7 @@ export default function TourForm({ open, onClose, tour, onSubmit }) {
     property_address: '',
     tour_date: '',
     tour_time: '',
+    period: 'AM',
     status: 'scheduled',
     notes: ''
   });
@@ -47,6 +48,7 @@ export default function TourForm({ open, onClose, tour, onSubmit }) {
         property_address: '',
         tour_date: now.toISOString().split('T')[0],
         tour_time: now.toTimeString().slice(0, 5),
+        period: 'AM',
         status: 'scheduled',
         notes: ''
       });
@@ -75,7 +77,16 @@ export default function TourForm({ open, onClose, tour, onSubmit }) {
     e.preventDefault();
     const [year, month, day] = formData.tour_date.split('-');
     const [hours, minutes] = formData.tour_time.split(':');
-    const tourDateTime = new Date(year, month - 1, day, hours, minutes);
+    
+    // Convert 12-hour to 24-hour format
+    let hour = parseInt(hours);
+    if (formData.period === 'PM' && hour !== 12) {
+      hour += 12;
+    } else if (formData.period === 'AM' && hour === 12) {
+      hour = 0;
+    }
+    
+    const tourDateTime = new Date(year, month - 1, day, hour, parseInt(minutes));
 
     const submissionData = {
       ...formData,
@@ -137,7 +148,7 @@ export default function TourForm({ open, onClose, tour, onSubmit }) {
                 InputLabelProps={{ shrink: true }}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12} sm={8}>
               <TextField
                 fullWidth
                 label="Tour Time"
@@ -149,25 +160,38 @@ export default function TourForm({ open, onClose, tour, onSubmit }) {
                   value = value.replace(/[^\d:]/g, '');
                   
                   // Handle hour input
-                  if (value.length === 2 && !value.includes(':')) {
+                  if (value.length === 1 || value.length === 2) {
                     const hour = parseInt(value);
-                    if (hour >= 0 && hour <= 23) {
-                      value = `${value}:`;
+                    if (hour >= 1 && hour <= 12) {
+                      if (value.length === 2) value = `${value}:`;
                     }
                   }
                   
-                  // Validate full time format (HH:mm)
-                  if (value.length <= 5 && /^([0-1]?[0-9]|2[0-3])?(:[0-5]?[0-9]?)?$/.test(value)) {
+                  // Validate format (H:mm or HH:mm)
+                  if (value.length <= 5 && /^([1-9]|1[0-2])?(:[0-5]?[0-9]?)?$/.test(value)) {
                     setFormData({ ...formData, tour_time: value });
                   }
                 }}
-                placeholder="HH:mm (24-hour)"
+                placeholder="HH:mm"
                 inputProps={{
                   maxLength: 5
                 }}
                 required
                 InputLabelProps={{ shrink: true }}
               />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                select
+                fullWidth
+                label="AM/PM"
+                value={formData.period || 'AM'}
+                onChange={(e) => setFormData({ ...formData, period: e.target.value })}
+                required
+              >
+                <MenuItem value="AM">AM</MenuItem>
+                <MenuItem value="PM">PM</MenuItem>
+              </TextField>
             </Grid>
             <Grid item xs={12}>
               <TextField
