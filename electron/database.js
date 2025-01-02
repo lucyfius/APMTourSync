@@ -165,8 +165,8 @@ class Database {
       
       const objectId = new ObjectId(tourId);
       
-      // Remove the property_address from tourData if it exists
-      const { property_address, ...updateData } = tourData;
+      // Remove any fields that shouldn't be updated
+      const { _id, created_at, updated_at, ...updateData } = tourData;
       
       const result = await this.db.collection('tours').updateOne(
         { _id: objectId },

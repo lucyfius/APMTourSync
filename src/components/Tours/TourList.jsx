@@ -110,7 +110,9 @@ export default function TourList() {
   const handleFormSubmit = async (tourData) => {
     try {
       if (selectedTour) {
-        await window.api.database.updateTour(selectedTour._id, tourData);
+        // Remove _id and other unnecessary fields before updating
+        const { _id, created_at, updated_at, ...updateData } = tourData;
+        await window.api.database.updateTour(selectedTour._id, updateData);
       } else {
         await window.api.database.createTour(tourData);
       }
