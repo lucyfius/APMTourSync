@@ -189,6 +189,62 @@ class Database {
     }
   }
 
+  async updateProperty(propertyId, propertyData) {
+    try {
+      await this.ensureConnection();
+      const { ObjectId } = require('mongodb');
+      
+      if (!propertyId || typeof propertyId !== 'string' || propertyId.length !== 24) {
+        throw new Error('Invalid property ID format');
+      }
+      
+      const objectId = new ObjectId(propertyId);
+      
+      // Remove any fields that shouldn't be updated
+      const { _id, created_at, updated_at, ...updateData } = propertyData;
+      
+      const result = await this.db.collection('properties').updateOne(
+        { _id: objectId },
+        { 
+          $set: {
+            ...updateData,
+            updated_at: new Date()
+          }
+        }
+      );
+      
+      if (result.matchedCount === 0) {
+        throw new Error('Property not found');
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Error in updateProperty:', error);
+      throw error;
+    }
+  }
+
+  async cleanupOldTours() {
+    try {
+      await this.ensureConnection();
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const result = await this.db.collection('tours').deleteMany({
+        $and: [
+          { tour_time: { $lt: thirtyDaysAgo.toISOString() } },
+          { status: { $in: ['completed', 'cancelled', 'no-show'] } }
+        ]
+      });
+
+      console.log(`Cleaned up ${result.deletedCount} old tours`);
+      return result;
+    } catch (error) {
+      console.error('Error cleaning up old tours:', error);
+      throw error;
+    }
+  }
+
   // Add other database methods here...
 }
 

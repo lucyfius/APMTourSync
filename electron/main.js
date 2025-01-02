@@ -113,11 +113,29 @@ if (!gotTheLock) {
       }
     });
 
-    ipcMain.handle('db:updateProperty', (_, id, property) => db.updateProperty(id, property));
+    ipcMain.handle('db:updateProperty', async (_, id, property) => {
+      try {
+        const result = await db.updateProperty(id, property);
+        return result;
+      } catch (error) {
+        console.error('IPC updateProperty error:', error);
+        throw error;
+      }
+    });
     ipcMain.handle('db:deleteProperty', (_, id) => db.deleteProperty(id));
 
     ipcMain.handle('db:getSettings', () => db.getSettings());
     ipcMain.handle('db:updateSettings', (_, settings) => db.updateSettings(settings));
+
+    ipcMain.handle('db:cleanupOldTours', async () => {
+      try {
+        const result = await db.cleanupOldTours();
+        return result;
+      } catch (error) {
+        console.error('IPC cleanupOldTours error:', error);
+        throw error;
+      }
+    });
 
     // Window controls
     ipcMain.on('app:minimize', () => mainWindow.minimize());

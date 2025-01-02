@@ -43,6 +43,24 @@ class Database {
       throw error;
     }
   }
+
+  async updateProperty(propertyId, propertyData) {
+    try {
+      return await window.api.database.updateProperty(propertyId, propertyData);
+    } catch (error) {
+      console.error('Error updating property:', error);
+      throw error;
+    }
+  }
+
+  async cleanupOldTours() {
+    try {
+      return await window.api.database.cleanupOldTours();
+    } catch (error) {
+      console.error('Error cleaning up old tours:', error);
+      throw error;
+    }
+  }
 }
 
 export default new Database(); 

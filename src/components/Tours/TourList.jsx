@@ -36,7 +36,26 @@ export default function TourList() {
   const [tabValue, setTabValue] = useState('scheduled');
 
   useEffect(() => {
+    // Load tours immediately
     loadTours();
+    
+    // Run cleanup in the background
+    const cleanup = async () => {
+      try {
+        await database.cleanupOldTours();
+        // Reload tours after cleanup
+        loadTours();
+      } catch (error) {
+        console.error('Error during tour cleanup:', error);
+      }
+    };
+    
+    cleanup();
+    
+    // Set up daily cleanup
+    const dailyCleanup = setInterval(cleanup, 24 * 60 * 60 * 1000);
+    
+    return () => clearInterval(dailyCleanup);
   }, []);
 
   const loadTours = async () => {

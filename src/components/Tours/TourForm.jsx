@@ -42,44 +42,35 @@ export default function TourForm({ open, onClose, tour, onSubmit }) {
             tour_date: tourDate.toISOString().split('T')[0],
             tour_time: tourDate.toTimeString().slice(0, 5),
             property_id: tour.property_id || '',
-            period: tourDate.getHours() >= 12 ? 'PM' : 'AM'
+            property_address: tour.property_address || '',
+            period: tourDate.getHours() >= 12 ? 'PM' : 'AM',
+            status: tour.status || 'scheduled'
           });
         } else {
-          const now = new Date();
-          setFormData({
-            ...tour,
-            tour_date: now.toISOString().split('T')[0],
-            tour_time: now.toTimeString().slice(0, 5),
-            property_id: tour.property_id || '',
-            period: now.getHours() >= 12 ? 'PM' : 'AM'
-          });
+          setDefaultFormData(new Date());
         }
       } catch (error) {
         console.error('Error parsing tour date:', error);
-        const now = new Date();
-        setFormData({
-          ...tour,
-          tour_date: now.toISOString().split('T')[0],
-          tour_time: now.toTimeString().slice(0, 5),
-          property_id: tour.property_id || '',
-          period: now.getHours() >= 12 ? 'PM' : 'AM'
-        });
+        setDefaultFormData(new Date());
       }
     } else {
-      const now = new Date();
-      setFormData({
-        client_name: '',
-        phone_number: '',
-        property_id: '',
-        property_address: '',
-        tour_date: now.toISOString().split('T')[0],
-        tour_time: now.toTimeString().slice(0, 5),
-        period: 'AM',
-        status: 'scheduled',
-        notes: ''
-      });
+      setDefaultFormData(new Date());
     }
   }, [tour]);
+
+  const setDefaultFormData = (date) => {
+    setFormData({
+      client_name: '',
+      phone_number: '',
+      property_id: '',
+      property_address: '',
+      tour_date: date.toISOString().split('T')[0],
+      tour_time: date.toTimeString().slice(0, 5),
+      period: date.getHours() >= 12 ? 'PM' : 'AM',
+      status: 'scheduled',
+      notes: ''
+    });
+  };
 
   const loadProperties = async () => {
     try {
@@ -92,11 +83,13 @@ export default function TourForm({ open, onClose, tour, onSubmit }) {
 
   const handlePropertyChange = (event) => {
     const selectedProperty = properties.find(p => p._id === event.target.value);
-    setFormData({
-      ...formData,
-      property_id: selectedProperty._id,
-      property_address: selectedProperty.address
-    });
+    if (selectedProperty) {
+      setFormData({
+        ...formData,
+        property_id: selectedProperty._id,
+        property_address: selectedProperty.address
+      });
+    }
   };
 
   const handleSubmit = (e) => {
