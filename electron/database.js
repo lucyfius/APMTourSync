@@ -1,18 +1,26 @@
 const { MongoClient } = require('mongodb');
 const path = require('path');
-require('dotenv').config({
-  path: path.join(process.cwd(), '.env')
-});
+const isDev = process.env.NODE_ENV === 'development';
+
+// In development, use dotenv
+if (isDev) {
+  require('dotenv').config({
+    path: path.join(process.cwd(), '.env')
+  });
+}
 
 class Database {
   constructor() {
-    if (!process.env.MONGODB_URI) {
-      console.error('Environment variables:', process.env);
-      throw new Error('MONGODB_URI not found in environment variables');
+    // Default connection string for production
+    const defaultUri = 'your_production_mongodb_uri';
+    
+    this.uri = process.env.MONGODB_URI || defaultUri;
+    if (!this.uri) {
+      throw new Error('MongoDB URI not configured');
     }
     
     console.log('Initializing database connection...');
-    this.client = new MongoClient(process.env.MONGODB_URI, {
+    this.client = new MongoClient(this.uri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
       retryWrites: true,

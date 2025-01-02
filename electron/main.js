@@ -4,6 +4,11 @@ const log = require('electron-log');
 
 // Development mode check
 const isDev = process.env.NODE_ENV === 'development';
+if (!isDev) {
+  require('dotenv').config({
+    path: path.join(process.resourcesPath, '.env')
+  });
+}
 log.info('Environment:', process.env.NODE_ENV);
 log.info('Is Development:', isDev);
 log.info('Is Packaged:', app.isPackaged);

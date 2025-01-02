@@ -11,6 +11,7 @@ files:
   - "electron/**/*"
   - "package.json"
   - "node_modules/**/*"
+  - ".env"
 
 win:
   target:
@@ -28,3 +29,10 @@ nsis:
   deleteAppDataOnUninstall: true
 
 asar: true 
+
+extraResources: [
+  {
+    "from": ".env",
+    "to": ".env"
+  }
+] 
