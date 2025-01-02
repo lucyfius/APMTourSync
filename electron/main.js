@@ -1,6 +1,13 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
-const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
+const log = require('electron-log');
+
+// Development mode check
+const isDev = process.env.NODE_ENV === 'development';
+log.info('Environment:', process.env.NODE_ENV);
+log.info('Is Development:', isDev);
+log.info('Is Packaged:', app.isPackaged);
+
 const Database = require('./database');
 const UpdateHandler = require('./updater');
 
@@ -36,19 +43,21 @@ if (!gotTheLock) {
         }
       });
 
-      // Load the app
+      // Load the app with explicit path resolution
       if (isDev) {
+        log.info('Loading development URL');
         await mainWindow.loadURL('http://localhost:3000');
         mainWindow.webContents.openDevTools();
       } else {
         const indexPath = path.join(__dirname, '..', 'dist', 'index.html');
+        log.info('Loading production path:', indexPath);
         await mainWindow.loadFile(indexPath);
       }
 
       updateHandler = new UpdateHandler(mainWindow);
       setupIpcHandlers();
     } catch (error) {
-      console.error('Error during window creation:', error);
+      log.error('Error during window creation:', error);
       dialog.showErrorBox('Initialization Error', error.message);
     }
   }
