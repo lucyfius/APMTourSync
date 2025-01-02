@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import { CircularProgress, Box, Alert, Button } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -9,6 +9,7 @@ import Sidebar from './components/Layout/Sidebar';
 import DashboardView from './components/Dashboard/DashboardView';
 import TourList from './components/Tours/TourList';
 import PropertyList from './components/Properties/PropertyList';
+import TitleBar from './components/Layout/TitleBar';
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -55,18 +56,21 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <BrowserRouter>
-        <Box sx={{ display: 'flex', height: '100vh' }}>
-          <Sidebar />
-          <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-            <Routes>
-              <Route path="/" element={<DashboardView />} />
-              <Route path="/tours" element={<TourList />} />
-              <Route path="/properties" element={<PropertyList />} />
-            </Routes>
+      <HashRouter>
+        <Box sx={{ display: 'flex', height: '100vh', flexDirection: 'column' }}>
+          <TitleBar />
+          <Box sx={{ display: 'flex', flex: 1 }}>
+            <Sidebar />
+            <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+              <Routes>
+                <Route path="/" element={<DashboardView />} />
+                <Route path="/tours" element={<TourList />} />
+                <Route path="/properties" element={<PropertyList />} />
+              </Routes>
+            </Box>
           </Box>
         </Box>
-      </BrowserRouter>
+      </HashRouter>
     </ThemeProvider>
   );
 }

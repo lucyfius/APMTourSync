@@ -7,8 +7,10 @@
   "scripts": {
     "prestart": "npx kill-port 3000 && node scripts/cleanup.js",
     "start": "concurrently -k \"cross-env BROWSER=none NODE_ENV=development npm run start:react\" \"wait-on tcp:3000 && cross-env NODE_ENV=development npm run start:electron\"",
-    "start:react": "vite",
+    "start:react": "vite --port 3000",
     "start:electron": "electron .",
+    "test:vite": "vite",
+    "test:electron": "cross-env NODE_ENV=development electron .",
     "build": "rimraf dist && cross-env NODE_ENV=production vite build && electron-builder --config electron-builder.yml",
     "preview": "vite preview",
     "postinstall": "electron-builder install-app-deps"

@@ -13,6 +13,9 @@ files:
   - "node_modules/**/*"
   - ".env"
 
+extraResources:
+  - ".env"
+
 win:
   target:
     - target: nsis
@@ -29,10 +32,3 @@ nsis:
   deleteAppDataOnUninstall: true
 
 asar: true 
-
-extraResources: [
-  {
-    "from": ".env",
-    "to": ".env"
-  }
-] 

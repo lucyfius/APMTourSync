@@ -41,11 +41,14 @@ if (!gotTheLock) {
       mainWindow = new BrowserWindow({
         width: 1200,
         height: 800,
+        minWidth: 800,
+        minHeight: 600,
         webPreferences: {
           nodeIntegration: false,
           contextIsolation: true,
           preload: path.join(__dirname, 'preload.js')
-        }
+        },
+        frame: false
       });
 
       // Load the app with explicit path resolution
