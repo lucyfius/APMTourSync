@@ -5,12 +5,12 @@
   "author": "APM Property Management",
   "main": "electron/main.js",
   "scripts": {
-    "prestart": "npx kill-port 3000",
+    "prestart": "npx kill-port 3000 && node scripts/cleanup.js",
     "start": "concurrently -k \"cross-env BROWSER=none npm run start:react\" \"wait-on tcp:3000 && npm run start:electron\"",
     "start:react": "vite",
     "start:electron": "electron .",
     "electron:dev": "concurrently -k \"cross-env BROWSER=none npm run start:react\" \"wait-on tcp:3000 && npm run start:electron\"",
-    "build": "vite build && electron-builder",
+    "build": "vite build && electron-builder --config electron-builder.yml",
     "preview": "vite preview"
   },
   "dependencies": {

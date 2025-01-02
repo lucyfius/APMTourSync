@@ -8,108 +8,123 @@ let mainWindow;
 let db;
 let updateHandler;
 
-async function createWindow() {
-  try {
-    // Initialize database
-    db = new Database();
-    await db.connect();
+// Ensure single instance
+const gotTheLock = app.requestSingleInstanceLock();
 
-    mainWindow = new BrowserWindow({
-      width: 1200,
-      height: 800,
-      webPreferences: {
-        nodeIntegration: true,
-        contextIsolation: true,
-        preload: path.join(__dirname, 'preload.js')
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    // Someone tried to run a second instance, focus our window instead
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    }
+  });
+
+  async function createWindow() {
+    try {
+      // Initialize database
+      db = new Database();
+      await db.connect();
+
+      mainWindow = new BrowserWindow({
+        width: 1200,
+        height: 800,
+        webPreferences: {
+          nodeIntegration: true,
+          contextIsolation: true,
+          preload: path.join(__dirname, 'preload.js')
+        }
+      });
+
+      // Load the app
+      if (isDev) {
+        await mainWindow.loadURL('http://localhost:3000');
+        mainWindow.webContents.openDevTools();
+      } else {
+        await mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
+      }
+
+      // Initialize update handler
+      updateHandler = new UpdateHandler(mainWindow);
+      setupIpcHandlers();
+    } catch (error) {
+      console.error('Error during window creation:', error);
+      dialog.showErrorBox('Initialization Error', error.message);
+    }
+  }
+
+  function setupIpcHandlers() {
+    // Database operations
+    ipcMain.handle('db:getTours', async () => {
+      try {
+        const tours = await db.getTours();
+        return tours;
+      } catch (error) {
+        console.error('IPC getTours error:', error);
+        throw error;
+      }
+    });
+    ipcMain.handle('db:createTour', (_, tour) => db.createTour(tour));
+    ipcMain.handle('db:updateTour', (_, id, tour) => db.updateTour(id, tour));
+    ipcMain.handle('db:deleteTour', (_, id) => db.deleteTour(id));
+
+    ipcMain.handle('db:getProperties', async () => {
+      try {
+        const properties = await db.getProperties();
+        return properties;
+      } catch (error) {
+        console.error('IPC getProperties error:', error);
+        throw error;
+      }
+    });
+    
+    ipcMain.handle('db:createProperty', async (_, property) => {
+      try {
+        const result = await db.createProperty(property);
+        return result;
+      } catch (error) {
+        console.error('IPC createProperty error:', error);
+        throw error;
       }
     });
 
-    // Load the app
-    if (isDev) {
-      await mainWindow.loadURL('http://localhost:3000');
-      mainWindow.webContents.openDevTools();
-    } else {
-      await mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
-    }
+    ipcMain.handle('db:updateProperty', (_, id, property) => db.updateProperty(id, property));
+    ipcMain.handle('db:deleteProperty', (_, id) => db.deleteProperty(id));
 
-    // Initialize update handler
-    updateHandler = new UpdateHandler(mainWindow);
-    setupIpcHandlers();
-  } catch (error) {
-    console.error('Error during window creation:', error);
-    dialog.showErrorBox('Initialization Error', error.message);
+    ipcMain.handle('db:getSettings', () => db.getSettings());
+    ipcMain.handle('db:updateSettings', (_, settings) => db.updateSettings(settings));
+
+    // Window controls
+    ipcMain.on('app:minimize', () => mainWindow.minimize());
+    ipcMain.on('app:maximize', () => {
+      if (mainWindow.isMaximized()) {
+        mainWindow.unmaximize();
+      } else {
+        mainWindow.maximize();
+      }
+    });
+    ipcMain.on('app:close', () => mainWindow.close());
+
+    // Updates
+    ipcMain.on('updates:check', () => {
+      updateHandler.checkForUpdates();
+    });
   }
-}
 
-function setupIpcHandlers() {
-  // Database operations
-  ipcMain.handle('db:getTours', async () => {
-    try {
-      const tours = await db.getTours();
-      return tours;
-    } catch (error) {
-      console.error('IPC getTours error:', error);
-      throw error;
-    }
-  });
-  ipcMain.handle('db:createTour', (_, tour) => db.createTour(tour));
-  ipcMain.handle('db:updateTour', (_, id, tour) => db.updateTour(id, tour));
-  ipcMain.handle('db:deleteTour', (_, id) => db.deleteTour(id));
+  // App lifecycle
+  app.whenReady().then(createWindow);
 
-  ipcMain.handle('db:getProperties', async () => {
-    try {
-      const properties = await db.getProperties();
-      return properties;
-    } catch (error) {
-      console.error('IPC getProperties error:', error);
-      throw error;
-    }
-  });
-  
-  ipcMain.handle('db:createProperty', async (_, property) => {
-    try {
-      const result = await db.createProperty(property);
-      return result;
-    } catch (error) {
-      console.error('IPC createProperty error:', error);
-      throw error;
+  app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') {
+      app.quit();
     }
   });
 
-  ipcMain.handle('db:updateProperty', (_, id, property) => db.updateProperty(id, property));
-  ipcMain.handle('db:deleteProperty', (_, id) => db.deleteProperty(id));
-
-  ipcMain.handle('db:getSettings', () => db.getSettings());
-  ipcMain.handle('db:updateSettings', (_, settings) => db.updateSettings(settings));
-
-  // Window controls
-  ipcMain.on('app:minimize', () => mainWindow.minimize());
-  ipcMain.on('app:maximize', () => {
-    if (mainWindow.isMaximized()) {
-      mainWindow.unmaximize();
-    } else {
-      mainWindow.maximize();
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
     }
-  });
-  ipcMain.on('app:close', () => mainWindow.close());
-
-  // Updates
-  ipcMain.on('updates:check', () => {
-    updateHandler.checkForUpdates();
-  });
-}
-
-// App lifecycle
-app.whenReady().then(createWindow);
-
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
-});
-
-app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
-  }
-}); 
+  }); 
+} 
