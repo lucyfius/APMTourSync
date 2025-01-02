@@ -34,6 +34,15 @@ class Database {
       throw error;
     }
   }
+
+  async updateTour(tourId, tourData) {
+    try {
+      return await window.api.database.updateTour(tourId, tourData);
+    } catch (error) {
+      console.error('Error updating tour:', error);
+      throw error;
+    }
+  }
 }
 
 export default new Database(); 

@@ -154,6 +154,41 @@ class Database {
     }
   }
 
+  async updateTour(tourId, tourData) {
+    try {
+      await this.ensureConnection();
+      const { ObjectId } = require('mongodb');
+      
+      if (!tourId || typeof tourId !== 'string' || tourId.length !== 24) {
+        throw new Error('Invalid tour ID format');
+      }
+      
+      const objectId = new ObjectId(tourId);
+      
+      // Remove the property_address from tourData if it exists
+      const { property_address, ...updateData } = tourData;
+      
+      const result = await this.db.collection('tours').updateOne(
+        { _id: objectId },
+        { 
+          $set: {
+            ...updateData,
+            updated_at: new Date()
+          }
+        }
+      );
+      
+      if (result.matchedCount === 0) {
+        throw new Error('Tour not found');
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Error in updateTour:', error);
+      throw error;
+    }
+  }
+
   // Add other database methods here...
 }
 

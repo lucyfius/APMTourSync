@@ -82,7 +82,15 @@ if (!gotTheLock) {
       }
     });
     ipcMain.handle('db:createTour', (_, tour) => db.createTour(tour));
-    ipcMain.handle('db:updateTour', (_, id, tour) => db.updateTour(id, tour));
+    ipcMain.handle('db:updateTour', async (_, id, tour) => {
+      try {
+        const result = await db.updateTour(id, tour);
+        return result;
+      } catch (error) {
+        console.error('IPC updateTour error:', error);
+        throw error;
+      }
+    });
     ipcMain.handle('db:deleteTour', (_, id) => db.deleteTour(id));
 
     ipcMain.handle('db:getProperties', async () => {

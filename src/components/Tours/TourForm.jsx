@@ -33,12 +33,38 @@ export default function TourForm({ open, onClose, tour, onSubmit }) {
 
   useEffect(() => {
     if (tour) {
-      const tourDate = new Date(tour.tour_time);
-      setFormData({
-        ...tour,
-        tour_date: tourDate.toISOString().split('T')[0],
-        tour_time: tourDate.toTimeString().slice(0, 5)
-      });
+      try {
+        const tourDate = new Date(tour.tour_time);
+        
+        if (!isNaN(tourDate.getTime())) {
+          setFormData({
+            ...tour,
+            tour_date: tourDate.toISOString().split('T')[0],
+            tour_time: tourDate.toTimeString().slice(0, 5),
+            property_id: tour.property_id || '',
+            period: tourDate.getHours() >= 12 ? 'PM' : 'AM'
+          });
+        } else {
+          const now = new Date();
+          setFormData({
+            ...tour,
+            tour_date: now.toISOString().split('T')[0],
+            tour_time: now.toTimeString().slice(0, 5),
+            property_id: tour.property_id || '',
+            period: now.getHours() >= 12 ? 'PM' : 'AM'
+          });
+        }
+      } catch (error) {
+        console.error('Error parsing tour date:', error);
+        const now = new Date();
+        setFormData({
+          ...tour,
+          tour_date: now.toISOString().split('T')[0],
+          tour_time: now.toTimeString().slice(0, 5),
+          property_id: tour.property_id || '',
+          period: now.getHours() >= 12 ? 'PM' : 'AM'
+        });
+      }
     } else {
       const now = new Date();
       setFormData({
