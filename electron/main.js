@@ -63,8 +63,26 @@ function setupIpcHandlers() {
   ipcMain.handle('db:updateTour', (_, id, tour) => db.updateTour(id, tour));
   ipcMain.handle('db:deleteTour', (_, id) => db.deleteTour(id));
 
-  ipcMain.handle('db:getProperties', () => db.getProperties());
-  ipcMain.handle('db:createProperty', (_, property) => db.createProperty(property));
+  ipcMain.handle('db:getProperties', async () => {
+    try {
+      const properties = await db.getProperties();
+      return properties;
+    } catch (error) {
+      console.error('IPC getProperties error:', error);
+      throw error;
+    }
+  });
+  
+  ipcMain.handle('db:createProperty', async (_, property) => {
+    try {
+      const result = await db.createProperty(property);
+      return result;
+    } catch (error) {
+      console.error('IPC createProperty error:', error);
+      throw error;
+    }
+  });
+
   ipcMain.handle('db:updateProperty', (_, id, property) => db.updateProperty(id, property));
   ipcMain.handle('db:deleteProperty', (_, id) => db.deleteProperty(id));
 

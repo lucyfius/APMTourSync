@@ -8,6 +8,7 @@ import theme from './styles/theme';
 import Sidebar from './components/Layout/Sidebar';
 import DashboardView from './components/Dashboard/DashboardView';
 import TourList from './components/Tours/TourList';
+import PropertyList from './components/Properties/PropertyList';
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -61,6 +62,7 @@ function App() {
             <Routes>
               <Route path="/" element={<DashboardView />} />
               <Route path="/tours" element={<TourList />} />
+              <Route path="/properties" element={<PropertyList />} />
             </Routes>
           </Box>
         </Box>

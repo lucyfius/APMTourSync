@@ -16,6 +16,24 @@ class Database {
       throw error;
     }
   }
+
+  async getProperties() {
+    try {
+      return await window.api.database.getProperties();
+    } catch (error) {
+      console.error('Error fetching properties:', error);
+      throw error;
+    }
+  }
+
+  async createProperty(propertyData) {
+    try {
+      return await window.api.database.createProperty(propertyData);
+    } catch (error) {
+      console.error('Error creating property:', error);
+      throw error;
+    }
+  }
 }
 
 export default new Database(); 

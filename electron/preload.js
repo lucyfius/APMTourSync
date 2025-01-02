@@ -21,7 +21,9 @@ contextBridge.exposeInMainWorld(
       getTours: () => ipcRenderer.invoke('db:getTours'),
       createTour: (tour) => ipcRenderer.invoke('db:createTour', tour),
       updateTour: (id, tour) => ipcRenderer.invoke('db:updateTour', id, tour),
-      deleteTour: (id) => ipcRenderer.invoke('db:deleteTour', id)
+      deleteTour: (id) => ipcRenderer.invoke('db:deleteTour', id),
+      getProperties: () => ipcRenderer.invoke('db:getProperties'),
+      createProperty: (property) => ipcRenderer.invoke('db:createProperty', property),
     },
     app: {
       minimize: () => ipcRenderer.send('app:minimize'),

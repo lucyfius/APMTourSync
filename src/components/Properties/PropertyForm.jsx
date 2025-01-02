@@ -17,9 +17,9 @@ export default function PropertyForm({ open, onClose, property, onSubmit }) {
   const [formData, setFormData] = useState({
     address: '',
     type: 'House',
-    price: '',
-    bedrooms: '',
-    bathrooms: '',
+    rent_price: '0',
+    bedrooms: '0',
+    bathrooms: '0',
     description: ''
   });
 
@@ -29,114 +29,94 @@ export default function PropertyForm({ open, onClose, property, onSubmit }) {
     }
   }, [property]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    try {
-      if (property) {
-        await database.updateProperty(property._id, formData);
-      } else {
-        await database.createProperty(formData);
-      }
-      onSubmit();
-    } catch (error) {
-      console.error('Error saving property:', error);
-    }
+    onSubmit(formData);
   };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>
-        {property ? 'Edit Property' : 'Add New Property'}
-      </DialogTitle>
-      <DialogContent>
-        <Grid container spacing={2} sx={{ mt: 1 }}>
-          <Grid item xs={12}>
-            <TextField
-              name="address"
-              label="Address"
-              value={formData.address}
-              onChange={handleChange}
-              fullWidth
-              required
-            />
+      <DialogTitle>{property ? 'Edit Property' : 'New Property'}</DialogTitle>
+      <form onSubmit={handleSubmit}>
+        <DialogContent>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Address"
+                value={formData.address}
+                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                required
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                select
+                fullWidth
+                label="Property Type"
+                value={formData.type}
+                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                required
+              >
+                {PROPERTY_TYPES.map((type) => (
+                  <MenuItem key={type} value={type}>
+                    {type}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Monthly Rent"
+                value={formData.rent_price}
+                onChange={(e) => setFormData({ ...formData, rent_price: e.target.value })}
+                required
+                InputProps={{
+                  startAdornment: <span>$</span>
+                }}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Bedrooms"
+                value={formData.bedrooms}
+                onChange={(e) => setFormData({ ...formData, bedrooms: e.target.value })}
+                required
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Bathrooms"
+                value={formData.bathrooms}
+                onChange={(e) => setFormData({ ...formData, bathrooms: e.target.value })}
+                required
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                label="Description"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              />
+            </Grid>
           </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              name="type"
-              label="Property Type"
-              select
-              value={formData.type}
-              onChange={handleChange}
-              fullWidth
-              required
-            >
-              {PROPERTY_TYPES.map((type) => (
-                <MenuItem key={type} value={type}>
-                  {type}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              name="price"
-              label="Price"
-              type="number"
-              value={formData.price}
-              onChange={handleChange}
-              fullWidth
-              required
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              name="bedrooms"
-              label="Bedrooms"
-              type="number"
-              value={formData.bedrooms}
-              onChange={handleChange}
-              fullWidth
-              required
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              name="bathrooms"
-              label="Bathrooms"
-              type="number"
-              value={formData.bathrooms}
-              onChange={handleChange}
-              fullWidth
-              required
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              name="description"
-              label="Description"
-              value={formData.description}
-              onChange={handleChange}
-              fullWidth
-              multiline
-              rows={4}
-            />
-          </Grid>
-        </Grid>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleSubmit} variant="contained">
-          {property ? 'Save Changes' : 'Add Property'}
-        </Button>
-      </DialogActions>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onClose}>Cancel</Button>
+          <Button type="submit" variant="contained" color="primary">
+            {property ? 'Save Changes' : 'Add Property'}
+          </Button>
+        </DialogActions>
+      </form>
     </Dialog>
   );
 } 

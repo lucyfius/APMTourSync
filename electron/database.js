@@ -117,6 +117,35 @@ class Database {
     }
   }
 
+  async getProperties() {
+    try {
+      await this.ensureConnection();
+      const result = await this.db.collection('properties').find().toArray();
+      return result.map(property => ({
+        ...property,
+        _id: property._id.toString()
+      }));
+    } catch (error) {
+      console.error('Error in getProperties:', error);
+      throw error;
+    }
+  }
+
+  async createProperty(propertyData) {
+    try {
+      await this.ensureConnection();
+      const result = await this.db.collection('properties').insertOne({
+        ...propertyData,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
+      return result;
+    } catch (error) {
+      console.error('Error in createProperty:', error);
+      throw error;
+    }
+  }
+
   // Add other database methods here...
 }
 

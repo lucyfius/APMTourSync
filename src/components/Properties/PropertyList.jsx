@@ -72,9 +72,9 @@ export default function PropertyList() {
                   {property.address}
                 </Typography>
                 <Typography color="textSecondary">
-                  {property.type} • ${property.price.toLocaleString()}
+                  {property.type} • ${property.rent_price ? property.rent_price.toLocaleString() : '0'}/month
                 </Typography>
-                <Typography variant="body2" sx={{ mt: 1 }}>
+                <Typography>
                   {property.bedrooms} beds • {property.bathrooms} baths
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
@@ -101,10 +101,19 @@ export default function PropertyList() {
           setSelectedProperty(null);
         }}
         property={selectedProperty}
-        onSubmit={() => {
-          fetchProperties();
-          setOpenForm(false);
-          setSelectedProperty(null);
+        onSubmit={async (propertyData) => {
+          try {
+            if (selectedProperty) {
+              await database.updateProperty(selectedProperty._id, propertyData);
+            } else {
+              await database.createProperty(propertyData);
+            }
+            fetchProperties();
+            setOpenForm(false);
+            setSelectedProperty(null);
+          } catch (error) {
+            console.error('Error saving property:', error);
+          }
         }}
       />
     </Box>
