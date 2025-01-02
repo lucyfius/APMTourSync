@@ -7,11 +7,20 @@ import {
   List,
   ListItem,
   ListItemText,
-  Divider
+  Divider,
+  Chip,
+  Stack
 } from '@mui/material';
 import { format } from 'date-fns';
 import database from '../../utils/database';
 import StatsCard from './StatsCard';
+
+const statusColors = {
+  scheduled: 'primary',
+  completed: 'success',
+  cancelled: 'error',
+  'no-show': 'warning'
+};
 
 export default function DashboardView() {
   const [stats, setStats] = useState({
@@ -104,15 +113,48 @@ export default function DashboardView() {
                   : 'Invalid Date';
 
                 return (
-                  <React.Fragment key={`${tour._id}-${index}`}>
-                    <ListItem>
-                      <ListItemText
-                        primary={tour.client_name}
-                        secondary={`${tour.property_address} - ${formattedDate}`}
+                  <ListItem 
+                    key={`${tour._id}-${index}`}
+                    sx={{
+                      bgcolor: index % 2 === 0 ? 'background.default' : 'background.paper',
+                      borderRadius: 1,
+                      my: 0.5,
+                      '&:hover': {
+                        bgcolor: 'action.hover',
+                      }
+                    }}
+                    secondaryAction={
+                      <Chip
+                        label={tour.status || 'scheduled'}
+                        color={statusColors[tour.status || 'scheduled']}
+                        size="small"
+                        sx={{ minWidth: 85 }}
                       />
-                    </ListItem>
-                    {index < recentTours.length - 1 && <Divider />}
-                  </React.Fragment>
+                    }
+                  >
+                    <ListItemText
+                      primary={
+                        <Box component="span" sx={{ fontWeight: 'medium' }}>
+                          {tour.client_name}
+                        </Box>
+                      }
+                      secondary={
+                        <Stack spacing={0.5} component="span">
+                          <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <span>📍</span> {tour.property_address}
+                          </Box>
+                          <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <span>🕒</span> {formattedDate}
+                          </Box>
+                          {tour.phone_number && (
+                            <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <span>📱</span> {tour.phone_number}
+                            </Box>
+                          )}
+                        </Stack>
+                      }
+                    />
+                  </ListItem>
                 );
               })}
             </List>
