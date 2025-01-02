@@ -9,9 +9,6 @@ import {
   MenuItem,
   Grid
 } from '@mui/material';
-import { DateTimePicker } from '@mui/x-date-pickers';
-import { LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import database from '../../utils/database';
 
 const TOUR_STATUS = ['scheduled', 'completed', 'cancelled', 'no-show'];
@@ -20,43 +17,72 @@ export default function TourForm({ open, onClose, tour, onSubmit }) {
   const [formData, setFormData] = useState({
     client_name: '',
     phone_number: '',
+    property_id: '',
     property_address: '',
-    tour_time: new Date(),
+    tour_date: '',
+    tour_time: '',
     status: 'scheduled',
     notes: ''
   });
+  const [properties, setProperties] = useState([]);
+
+  useEffect(() => {
+    loadProperties();
+  }, []);
 
   useEffect(() => {
     if (tour) {
+      const tourDate = new Date(tour.tour_time);
       setFormData({
         ...tour,
-        tour_time: tour.tour_time ? new Date(tour.tour_time) : new Date()
+        tour_date: tourDate.toISOString().split('T')[0],
+        tour_time: tourDate.toTimeString().slice(0, 5)
       });
     } else {
-      // Reset form for new tours
+      const now = new Date();
       setFormData({
         client_name: '',
         phone_number: '',
+        property_id: '',
         property_address: '',
-        tour_time: new Date(),
+        tour_date: now.toISOString().split('T')[0],
+        tour_time: now.toTimeString().slice(0, 5),
         status: 'scheduled',
         notes: ''
       });
     }
   }, [tour]);
 
+  const loadProperties = async () => {
+    try {
+      const data = await database.getProperties();
+      setProperties(data);
+    } catch (error) {
+      console.error('Error loading properties:', error);
+    }
+  };
+
+  const handlePropertyChange = (event) => {
+    const selectedProperty = properties.find(p => p._id === event.target.value);
+    setFormData({
+      ...formData,
+      property_id: selectedProperty._id,
+      property_address: selectedProperty.address
+    });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    const [year, month, day] = formData.tour_date.split('-');
+    const [hours, minutes] = formData.tour_time.split(':');
+    const tourDateTime = new Date(year, month - 1, day, hours, minutes);
+
     const submissionData = {
       ...formData,
-      tour_time: formData.tour_time instanceof Date 
-        ? formData.tour_time.toISOString()
-        : new Date().toISOString(),
+      tour_time: tourDateTime.toISOString(),
       client_name: formData.client_name.trim(),
-      property_address: formData.property_address.trim(),
       phone_number: formData.phone_number.trim(),
     };
-    console.log('Submitting tour data:', submissionData);
     onSubmit(submissionData);
   };
 
@@ -86,22 +112,62 @@ export default function TourForm({ open, onClose, tour, onSubmit }) {
             </Grid>
             <Grid item xs={12}>
               <TextField
+                select
                 fullWidth
-                label="Property Address"
-                value={formData.property_address}
-                onChange={(e) => setFormData({ ...formData, property_address: e.target.value })}
+                label="Property"
+                value={formData.property_id}
+                onChange={handlePropertyChange}
                 required
+              >
+                {properties.map((property) => (
+                  <MenuItem key={property._id} value={property._id}>
+                    {property.address} - {property.bedrooms}bd/{property.bathrooms}ba ${property.rent_price}/mo
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                type="date"
+                label="Tour Date"
+                value={formData.tour_date}
+                onChange={(e) => setFormData({ ...formData, tour_date: e.target.value })}
+                required
+                InputLabelProps={{ shrink: true }}
               />
             </Grid>
-            <Grid item xs={12}>
-              <LocalizationProvider dateAdapter={AdapterDateFns}>
-                <DateTimePicker
-                  label="Tour Date & Time"
-                  value={formData.tour_time}
-                  onChange={(newValue) => setFormData({ ...formData, tour_time: newValue })}
-                  renderInput={(params) => <TextField {...params} fullWidth required />}
-                />
-              </LocalizationProvider>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Tour Time"
+                value={formData.tour_time}
+                onChange={(e) => {
+                  let value = e.target.value;
+                  
+                  // Allow direct typing but enforce format
+                  value = value.replace(/[^\d:]/g, '');
+                  
+                  // Handle hour input
+                  if (value.length === 2 && !value.includes(':')) {
+                    const hour = parseInt(value);
+                    if (hour >= 0 && hour <= 23) {
+                      value = `${value}:`;
+                    }
+                  }
+                  
+                  // Validate full time format (HH:mm)
+                  if (value.length <= 5 && /^([0-1]?[0-9]|2[0-3])?(:[0-5]?[0-9]?)?$/.test(value)) {
+                    setFormData({ ...formData, tour_time: value });
+                  }
+                }}
+                placeholder="HH:mm (24-hour)"
+                inputProps={{
+                  maxLength: 5
+                }}
+                required
+                InputLabelProps={{ shrink: true }}
+              />
             </Grid>
             <Grid item xs={12}>
               <TextField
@@ -122,9 +188,9 @@ export default function TourForm({ open, onClose, tour, onSubmit }) {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Notes"
                 multiline
                 rows={4}
+                label="Notes"
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               />
