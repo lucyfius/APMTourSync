@@ -6,11 +6,10 @@
   "main": "electron/main.js",
   "scripts": {
     "prestart": "npx kill-port 3000 && node scripts/cleanup.js",
-    "start": "concurrently -k \"cross-env BROWSER=none npm run start:react\" \"wait-on tcp:3000 && npm run start:electron\"",
+    "start": "concurrently -k \"cross-env BROWSER=none NODE_ENV=development npm run start:react\" \"wait-on tcp:3000 && cross-env NODE_ENV=development npm run start:electron\"",
     "start:react": "vite",
     "start:electron": "electron .",
-    "electron:dev": "concurrently -k \"cross-env BROWSER=none npm run start:react\" \"wait-on tcp:3000 && npm run start:electron\"",
-    "build": "vite build && electron-builder --config electron-builder.yml",
+    "build": "cross-env NODE_ENV=production vite build && electron-builder --config electron-builder.yml",
     "preview": "vite preview"
   },
   "dependencies": {

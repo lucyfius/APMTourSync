@@ -1,6 +1,6 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
-const isDev = !app.isPackaged;
+const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 const Database = require('./database');
 const UpdateHandler = require('./updater');
 
@@ -15,7 +15,6 @@ if (!gotTheLock) {
   app.quit();
 } else {
   app.on('second-instance', () => {
-    // Someone tried to run a second instance, focus our window instead
     if (mainWindow) {
       if (mainWindow.isMinimized()) mainWindow.restore();
       mainWindow.focus();
@@ -24,7 +23,6 @@ if (!gotTheLock) {
 
   async function createWindow() {
     try {
-      // Initialize database
       db = new Database();
       await db.connect();
 
@@ -32,7 +30,7 @@ if (!gotTheLock) {
         width: 1200,
         height: 800,
         webPreferences: {
-          nodeIntegration: true,
+          nodeIntegration: false,
           contextIsolation: true,
           preload: path.join(__dirname, 'preload.js')
         }
@@ -43,10 +41,10 @@ if (!gotTheLock) {
         await mainWindow.loadURL('http://localhost:3000');
         mainWindow.webContents.openDevTools();
       } else {
-        await mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
+        const indexPath = path.join(__dirname, '..', 'dist', 'index.html');
+        await mainWindow.loadFile(indexPath);
       }
 
-      // Initialize update handler
       updateHandler = new UpdateHandler(mainWindow);
       setupIpcHandlers();
     } catch (error) {
