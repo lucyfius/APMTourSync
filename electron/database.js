@@ -245,6 +245,36 @@ class Database {
     }
   }
 
+  async deleteProperty(propertyId) {
+    try {
+      await this.ensureConnection();
+      const { ObjectId } = require('mongodb');
+      
+      if (!propertyId || typeof propertyId !== 'string' || propertyId.length !== 24) {
+        throw new Error('Invalid property ID format');
+      }
+      
+      const objectId = new ObjectId(propertyId);
+      
+      // First check if property is referenced in any tours
+      const relatedTours = await this.db.collection('tours').findOne({ property_id: propertyId });
+      if (relatedTours) {
+        throw new Error('Cannot delete property that has associated tours');
+      }
+      
+      const result = await this.db.collection('properties').deleteOne({ _id: objectId });
+      
+      if (result.deletedCount === 0) {
+        throw new Error('Property not found');
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Error in deleteProperty:', error);
+      throw error;
+    }
+  }
+
   // Add other database methods here...
 }
 

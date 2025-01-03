@@ -72,11 +72,13 @@ export default function PropertyList() {
                   {property.address}
                 </Typography>
                 <Typography color="textSecondary">
-                  {property.type} • ${property.rent_price ? property.rent_price.toLocaleString() : '0'}/month
+                  {property.type === 'commercial' ? 'Commercial' : property.type} • ${property.rent_price ? property.rent_price.toLocaleString() : '0'}/month
                 </Typography>
-                <Typography>
-                  {property.bedrooms} beds • {property.bathrooms} baths
-                </Typography>
+                {property.type !== 'commercial' && (
+                  <Typography>
+                    {property.bedrooms} beds • {property.bathrooms} baths
+                  </Typography>
+                )}
                 <Typography variant="body2" color="textSecondary">
                   {property.description}
                 </Typography>

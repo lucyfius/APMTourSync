@@ -7,31 +7,66 @@ import {
   Button,
   TextField,
   Grid,
-  MenuItem
+  MenuItem,
+  InputAdornment
 } from '@mui/material';
 import database from '../../utils/database';
 
-const PROPERTY_TYPES = ['House', 'Apartment', 'Condo', 'Townhouse'];
+const PROPERTY_TYPES = ['house', 'apartment', 'duplex', 'townhouse', 'commercial'];
 
 export default function PropertyForm({ open, onClose, property, onSubmit }) {
   const [formData, setFormData] = useState({
     address: '',
-    type: 'House',
-    rent_price: '0',
-    bedrooms: '0',
-    bathrooms: '0',
+    type: 'house',
+    bedrooms: 1,
+    bathrooms: 1,
+    rent_price: '',
     description: ''
   });
 
   useEffect(() => {
     if (property) {
-      setFormData(property);
+      setFormData({
+        ...property,
+        rent_price: property.rent_price ? property.rent_price.toString() : ''
+      });
+    } else {
+      setFormData({
+        address: '',
+        type: 'house',
+        bedrooms: 1,
+        bathrooms: 1,
+        rent_price: '',
+        description: ''
+      });
     }
   }, [property]);
 
+  const handleTypeChange = (e) => {
+    const newType = e.target.value;
+    setFormData(prev => ({
+      ...prev,
+      type: newType,
+      // Reset bedrooms and bathrooms if commercial
+      bedrooms: newType === 'commercial' ? 0 : prev.bedrooms,
+      bathrooms: newType === 'commercial' ? 0 : prev.bathrooms
+    }));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    const submitData = {
+      ...formData,
+      rent_price: parseFloat(formData.rent_price) || 0,
+    };
+
+    // Only include bedrooms and bathrooms for non-commercial properties
+    if (formData.type !== 'commercial') {
+      submitData.bedrooms = parseInt(formData.bedrooms) || 0;
+      submitData.bathrooms = parseInt(formData.bathrooms) || 0;
+    }
+
+    onSubmit(submitData);
   };
 
   return (
@@ -55,16 +90,42 @@ export default function PropertyForm({ open, onClose, property, onSubmit }) {
                 fullWidth
                 label="Property Type"
                 value={formData.type}
-                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                onChange={handleTypeChange}
                 required
               >
                 {PROPERTY_TYPES.map((type) => (
                   <MenuItem key={type} value={type}>
-                    {type}
+                    {type.charAt(0).toUpperCase() + type.slice(1)}
                   </MenuItem>
                 ))}
               </TextField>
             </Grid>
+            {formData.type !== 'commercial' && (
+              <>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    label="Bedrooms"
+                    value={formData.bedrooms}
+                    onChange={(e) => setFormData({ ...formData, bedrooms: e.target.value })}
+                    required
+                    inputProps={{ min: 0 }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    label="Bathrooms"
+                    value={formData.bathrooms}
+                    onChange={(e) => setFormData({ ...formData, bathrooms: e.target.value })}
+                    required
+                    inputProps={{ min: 0 }}
+                  />
+                </Grid>
+              </>
+            )}
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -74,28 +135,8 @@ export default function PropertyForm({ open, onClose, property, onSubmit }) {
                 onChange={(e) => setFormData({ ...formData, rent_price: e.target.value })}
                 required
                 InputProps={{
-                  startAdornment: <span>$</span>
+                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
                 }}
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                fullWidth
-                type="number"
-                label="Bedrooms"
-                value={formData.bedrooms}
-                onChange={(e) => setFormData({ ...formData, bedrooms: e.target.value })}
-                required
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                fullWidth
-                type="number"
-                label="Bathrooms"
-                value={formData.bathrooms}
-                onChange={(e) => setFormData({ ...formData, bathrooms: e.target.value })}
-                required
               />
             </Grid>
             <Grid item xs={12}>
@@ -112,9 +153,7 @@ export default function PropertyForm({ open, onClose, property, onSubmit }) {
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose}>Cancel</Button>
-          <Button type="submit" variant="contained" color="primary">
-            {property ? 'Save Changes' : 'Add Property'}
-          </Button>
+          <Button type="submit" variant="contained">Save</Button>
         </DialogActions>
       </form>
     </Dialog>

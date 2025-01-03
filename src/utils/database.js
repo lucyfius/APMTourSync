@@ -61,6 +61,15 @@ class Database {
       throw error;
     }
   }
+
+  async deleteProperty(propertyId) {
+    try {
+      return await window.api.database.deleteProperty(propertyId);
+    } catch (error) {
+      console.error('Error deleting property:', error);
+      throw error;
+    }
+  }
 }
 
 export default new Database(); 

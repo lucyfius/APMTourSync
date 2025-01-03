@@ -123,7 +123,15 @@ if (!gotTheLock) {
         throw error;
       }
     });
-    ipcMain.handle('db:deleteProperty', (_, id) => db.deleteProperty(id));
+    ipcMain.handle('db:deleteProperty', async (_, id) => {
+      try {
+        const result = await db.deleteProperty(id);
+        return result;
+      } catch (error) {
+        console.error('IPC deleteProperty error:', error);
+        throw error;
+      }
+    });
 
     ipcMain.handle('db:getSettings', () => db.getSettings());
     ipcMain.handle('db:updateSettings', (_, settings) => db.updateSettings(settings));

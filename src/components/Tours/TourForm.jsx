@@ -151,7 +151,10 @@ export default function TourForm({ open, onClose, tour, onSubmit }) {
               >
                 {properties.map((property) => (
                   <MenuItem key={property._id} value={property._id}>
-                    {property.address} - {property.bedrooms}bd/{property.bathrooms}ba ${property.rent_price}/mo
+                    {property.address} - {property.type === 'commercial' ? 
+                      `Commercial • $${property.rent_price}/mo` : 
+                      `${property.bedrooms}bd/${property.bathrooms}ba $${property.rent_price}/mo`
+                    }
                   </MenuItem>
                 ))}
               </TextField>
