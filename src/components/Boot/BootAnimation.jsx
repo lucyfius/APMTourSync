@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Fade } from '@mui/material';
 import { keyframes } from '@mui/system';
+import { useCallback } from "react";
+import Particles from "react-tsparticles";
+import { loadFull } from "tsparticles";
 
 const gradientShift = keyframes`
   0% {
@@ -58,17 +61,22 @@ export default function BootAnimation({ onComplete }) {
   const [showLogo, setShowLogo] = useState(false);
   const [showText, setShowText] = useState(false);
   const [showSubtext, setShowSubtext] = useState(false);
+  const [isEasterEgg, setIsEasterEgg] = useState(false);
   const [content, setContent] = useState({
     logo: '../assets/icons/logo.png',
     title: 'TourSync',
     subtitle: 'An Internal Tool for Affordable Property Management'
   });
 
+  const particlesInit = useCallback(async engine => {
+    await loadFull(engine);
+  }, []);
+
   useEffect(() => {
-    // 0.5% chance for easter egg
     if (Math.random() < 0.025) {
       const randomEgg = easterEggs[Math.floor(Math.random() * easterEggs.length)];
       setContent(randomEgg);
+      setIsEasterEgg(true);
     }
 
     const sequence = async () => {
@@ -93,9 +101,158 @@ export default function BootAnimation({ onComplete }) {
         alignItems: 'center',
         justifyContent: 'center',
         bgcolor: 'background.default',
-        color: 'text.primary'
+        color: 'text.primary',
+        position: 'relative',
+        overflow: 'hidden'
       }}
     >
+      {isEasterEgg && (
+        <Particles
+          id="tsparticles"
+          init={particlesInit}
+          options={{
+            // Your confetti options here
+            fullScreen: {
+              zIndex: 1
+            },
+            emitters: [
+              {
+                position: {
+                  x: 0,
+                  y: 30
+                },
+                rate: {
+                  quantity: 5,
+                  delay: 0.15
+                },
+                particles: {
+                  move: {
+                    direction: "top-right",
+                    outModes: {
+                      top: "none",
+                      left: "none",
+                      default: "destroy"
+                    }
+                  }
+                }
+              },
+              {
+                position: {
+                  x: 100,
+                  y: 30
+                },
+                rate: {
+                  quantity: 5,
+                  delay: 0.15
+                },
+                particles: {
+                  move: {
+                    direction: "top-left",
+                    outModes: {
+                      top: "none",
+                      right: "none",
+                      default: "destroy"
+                    }
+                  }
+                }
+              }
+            ],
+            particles: {
+              color: {
+                value: [
+                  "#ffffff",
+                  "#FF0000"
+                ]
+              },
+              move: {
+                decay: 0.05,
+                direction: "top",
+                enable: true,
+                gravity: {
+                  enable: true
+                },
+                outModes: {
+                  top: "none",
+                  default: "destroy"
+                },
+                speed: {
+                  min: 10,
+                  max: 50
+                }
+              },
+              number: {
+                value: 0
+              },
+              opacity: {
+                value: 1
+              },
+              rotate: {
+                value: {
+                  min: 0,
+                  max: 360
+                },
+                direction: "random",
+                animation: {
+                  enable: true,
+                  speed: 30
+                }
+              },
+              tilt: {
+                direction: "random",
+                enable: true,
+                value: {
+                  min: 0,
+                  max: 360
+                },
+                animation: {
+                  enable: true,
+                  speed: 30
+                }
+              },
+              size: {
+                value: {
+                  min: 0,
+                  max: 2
+                },
+                animation: {
+                  enable: true,
+                  startValue: "min",
+                  count: 1,
+                  speed: 16,
+                  sync: true
+                }
+              },
+              roll: {
+                darken: {
+                  enable: true,
+                  value: 25
+                },
+                enable: true,
+                speed: {
+                  min: 5,
+                  max: 15
+                }
+              },
+              wobble: {
+                distance: 30,
+                enable: true,
+                speed: {
+                  min: -7,
+                  max: 7
+                }
+              },
+              shape: {
+                type: [
+                  "circle",
+                  "square"
+                ],
+                options: {}
+              }
+            }
+          }}
+        />
+      )}
+
       <Fade in={showLogo} timeout={1000}>
         <Box
           component="img"

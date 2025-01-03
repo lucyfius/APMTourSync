@@ -63,7 +63,7 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <HashRouter>
-        <Box sx={{ display: 'flex', height: '100vh', flexDirection: 'column', mt: '32px' }}>
+        <Box sx={{ display: 'flex', height: '100vh', flexDirection: 'column', mt: '28px' }}>
           <TitleBar />
           <Box sx={{ display: 'flex', flex: 1 }}>
             <Sidebar />
