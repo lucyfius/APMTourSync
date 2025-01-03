@@ -1,6 +1,6 @@
 {
   "name": "toursync",
-  "version": "1.0.4-b",
+  "version": "1.0.5",
   "description": "Property Tour Management System for APM",
   "author": "APM Property Management",
   "main": "electron/main.js",
