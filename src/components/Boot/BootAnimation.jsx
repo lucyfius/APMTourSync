@@ -63,7 +63,9 @@ export default function BootAnimation({ onComplete }) {
   const [showSubtext, setShowSubtext] = useState(false);
   const [isEasterEgg, setIsEasterEgg] = useState(false);
   const [content, setContent] = useState({
-    logo: '../assets/icons/logo.png',
+    logo: process.env.NODE_ENV === 'development' 
+      ? '../assets/icons/logo.png'
+      : '../../assets/icons/logo.png',
     title: 'TourSync',
     subtitle: 'An Internal Tool for Affordable Property Management'
   });
@@ -72,8 +74,56 @@ export default function BootAnimation({ onComplete }) {
     await loadFull(engine);
   }, []);
 
+  const getEasterEggPath = (imageName) => {
+    return process.env.NODE_ENV === 'development'
+      ? `../assets/icons/easter eggs/${imageName}`
+      : `../../assets/icons/easter eggs/${imageName}`;
+  };
+
   useEffect(() => {
     if (Math.random() < 0.025) {
+      const easterEggs = [
+        {
+          logo: getEasterEggPath('easter1.png'),
+          title: ':c',
+          subtitle: '"Secretly I am very lonely..."'
+        },
+        {
+          logo: getEasterEggPath('easter2.png'),
+          title: '˚ʚ♡ɞ˚',
+          subtitle: 'YOU HAVE NO OTHER OPTION AHHAHAHAHAHHAHAHAHA :3'
+        },
+        {
+          logo: getEasterEggPath('easter3.png'),
+          title: 'D:',
+          subtitle: 'I am telling!'
+        },
+        {
+          logo: getEasterEggPath('easter4.png'),
+          title: 'Crayon Eater',
+          subtitle: 'Maybe not the red ones though,,,, they are mine!'
+        },
+        {
+          logo: getEasterEggPath('easter5.png'),
+          title: 'Meow :3',
+          subtitle: 'Me, if you even care...'
+        },
+        {
+          logo: getEasterEggPath('easter6.png'),
+          title: 'Credit Score',
+          subtitle: 'How am I looking? Can I apply?'
+        },
+        {
+          logo: getEasterEggPath('easter7.png'),
+          title: 'Uhhhhhhh,,,,',
+          subtitle: 'brain = empty'
+        },
+        {
+          logo: getEasterEggPath('easter8.png'),
+          title: 'NOM NOM NOM',
+          subtitle: 'nom nom nom nom nom'
+        }
+      ];
       const randomEgg = easterEggs[Math.floor(Math.random() * easterEggs.length)];
       setContent(randomEgg);
       setIsEasterEgg(true);

@@ -11,10 +11,13 @@ files:
   - "electron/**/*"
   - "package.json"
   - "node_modules/**/*"
+  - "assets/**/*"
   - ".env"
 
 extraResources:
   - ".env"
+  - "assets/icons/**/*"
+  - "assets/icons/easter eggs/**/*"
 
 win:
   target:

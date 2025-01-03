@@ -26,7 +26,13 @@ function TitleBar() {
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <img src="/assets/icons/logo.png" alt="TourSync" style={{ height: '28px' }} />
+          <img 
+            src={process.env.NODE_ENV === 'development' 
+              ? "/assets/icons/logo.png"
+              : "../../assets/icons/logo.png"} 
+            alt="TourSync" 
+            style={{ height: '28px' }} 
+          />
         </Box>
 
         <Box
