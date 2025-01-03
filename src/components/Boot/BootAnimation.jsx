@@ -11,12 +11,66 @@ const gradientShift = keyframes`
   }
 `;
 
+const easterEggs = [
+  {
+    logo: '../assets/icons/easter eggs/easter1.png',
+    title: ':c',
+    subtitle: '"Secretly I am very lonely..."'
+  },
+  {
+    logo: '../assets/icons/easter eggs/easter2.png',
+    title: '˚ʚ♡ɞ˚',
+    subtitle: 'YOU HAVE NO OTHER OPTION AHHAHAHAHAHHAHAHAHA :3'
+  },
+  {
+    logo: '../assets/icons/easter eggs/easter3.png',
+    title: 'D:',
+    subtitle: 'I am telling!'
+  },
+  {
+    logo: '../assets/icons/easter eggs/easter4.png',
+    title: 'Crayon Eater',
+    subtitle: 'Maybe not the red ones though,,,, they are mine!'
+  },
+  {
+    logo: '../assets/icons/easter eggs/easter5.png',
+    title: 'Meow :3',
+    subtitle: 'Me, if you even care...'
+  },
+  {
+    logo: '../assets/icons/easter eggs/easter6.png',
+    title: 'Credit Score',
+    subtitle: 'How am I looking? Can I apply?'
+  },
+  {
+    logo: '../assets/icons/easter eggs/easter7.png',
+    title: 'Uhhhhhhh,,,,',
+    subtitle: 'brain = empty'
+  },
+  {
+    logo: '../assets/icons/easter eggs/easter8.png',
+    title: 'NOM NOM NOM',
+    subtitle: 'nom nom nom nom nom'
+  }
+];
+
 export default function BootAnimation({ onComplete }) {
   const [showLogo, setShowLogo] = useState(false);
   const [showText, setShowText] = useState(false);
   const [showSubtext, setShowSubtext] = useState(false);
+  const [content, setContent] = useState({
+    logo: '../assets/icons/logo.png',
+    title: 'TourSync',
+    subtitle: 'An Internal Tool for Affordable Property Management'
+  });
 
   useEffect(() => {
+    // 0.5% chance for easter egg
+    if (Math.random() < 0.005) {
+      const randomEgg = easterEggs[Math.floor(Math.random() * easterEggs.length)];
+      setContent(randomEgg);
+    }
+
     const sequence = async () => {
       setShowLogo(true);
       await new Promise(r => setTimeout(r, 800));
@@ -45,7 +99,7 @@ export default function BootAnimation({ onComplete }) {
       <Fade in={showLogo} timeout={1000}>
         <Box
           component="img"
-          src="../assets/icons/logo.png"
+          src={content.logo}
           sx={{
             width: 240,
             height: 'auto',
@@ -69,7 +123,7 @@ export default function BootAnimation({ onComplete }) {
             animation: `${gradientShift} 2s linear infinite`
           }}
         >
-          TourSync
+          {content.title}
         </Typography>
       </Fade>
       
@@ -81,7 +135,7 @@ export default function BootAnimation({ onComplete }) {
             fontSize: '1.25rem'
           }}
         >
-          An Internal Tool for Affordable Property Management
+          {content.subtitle}
         </Typography>
       </Fade>
     </Box>
