@@ -85,38 +85,36 @@ export default function DashboardView() {
       };
       setStats(stats);
 
-      // Get recent tours - show all scheduled tours regardless of date
+      // Get recent tours - show only scheduled upcoming tours
       const recent = tours
         .filter(t => {
-          // Check if tour is scheduled
-          const isScheduled = !t.status || t.status === 'scheduled';
-          
           // Get tour date
           let tourDate = null;
           if (t.tour_time) {
+            // Ensure we're working with UTC dates consistently
             tourDate = new Date(t.tour_time);
           } else if (t.date && t.time) {
             const [year, month, day] = t.date.split('-');
             const [hour, minute] = t.time.split(':');
-            tourDate = new Date(year, month - 1, day, hour, minute);
+            tourDate = new Date(Date.UTC(year, month - 1, day, hour, minute));
           }
 
-          // Check if tour is in the future
+          // Check if tour is scheduled and in the future
           const now = new Date();
-          const isFuture = tourDate && !isNaN(tourDate.getTime()) && tourDate > now;
-
-          // Debug logging
-          console.log('Tour:', {
+          const isScheduled = !t.status || t.status === 'scheduled';
+          
+          // Debug logging for all tours
+          console.log('Tour Debug:', {
             client: t.client_name,
-            date: t.date,
-            time: t.time,
-            tour_time: t.tour_time,
-            parsedDate: tourDate,
+            tourDate: tourDate?.toISOString(),
+            now: now.toISOString(),
             isScheduled,
-            isFuture
+            isFuture: tourDate > now,
+            status: t.status,
+            rawTourTime: t.tour_time
           });
 
-          return isScheduled && isFuture;
+          return isScheduled && tourDate > now;
         })
         .sort((a, b) => {
           let dateA = new Date(a.tour_time);
