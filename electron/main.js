@@ -48,7 +48,8 @@ if (!gotTheLock) {
           contextIsolation: true,
           preload: path.join(__dirname, 'preload.js')
         },
-        frame: false
+        frame: false,
+        icon: path.join(__dirname, '..', 'assets', 'icons', 'icon.ico')
       });
 
       // Load the app with explicit path resolution

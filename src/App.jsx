@@ -10,10 +10,12 @@ import DashboardView from './components/Dashboard/DashboardView';
 import TourList from './components/Tours/TourList';
 import PropertyList from './components/Properties/PropertyList';
 import TitleBar from './components/Layout/TitleBar';
+import BootAnimation from './components/Boot/BootAnimation';
 
 function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showBoot, setShowBoot] = useState(true);
 
   useEffect(() => {
     const initApp = async () => {
@@ -51,6 +53,10 @@ function App() {
         </Button>
       </Box>
     );
+  }
+
+  if (showBoot) {
+    return <BootAnimation onComplete={() => setShowBoot(false)} />;
   }
 
   return (
