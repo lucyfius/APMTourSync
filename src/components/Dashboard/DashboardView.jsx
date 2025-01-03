@@ -26,6 +26,18 @@ const statusColors = {
   'no-show': 'warning'
 };
 
+const formatPhoneNumber = (value) => {
+  if (!value) return '';
+  // Remove all non-digit characters
+  const cleaned = value.replace(/\D/g, '');
+  
+  // Format the number as (XXX) XXX-XXXX
+  if (cleaned.length >= 10) {
+    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6, 10)}`;
+  }
+  return value; // Return original value if not properly formatted
+};
+
 export default function DashboardView() {
   const [stats, setStats] = useState({
     totalTours: 0,
@@ -255,7 +267,7 @@ export default function DashboardView() {
                       secondary={
                         <Stack spacing={0.5} component="span">
                           <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <span>📱</span> {tour.phone_number}
+                            <span>📱</span> {formatPhoneNumber(tour.phone_number)}
                           </Box>
                           <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <span>🏘️</span> {tour.property_address}

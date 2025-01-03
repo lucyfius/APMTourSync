@@ -27,6 +27,23 @@ export default function TourForm({ open, onClose, tour, onSubmit }) {
   });
   const [properties, setProperties] = useState([]);
 
+  const formatPhoneNumber = (value) => {
+    // Remove all non-digit characters
+    const cleaned = value.replace(/\D/g, '');
+    
+    // Format the number as (XXX) XXX-XXXX
+    if (cleaned.length >= 10) {
+      return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6, 10)}`;
+    } else if (cleaned.length > 6) {
+      return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+    } else if (cleaned.length > 3) {
+      return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`;
+    } else if (cleaned.length > 0) {
+      return `(${cleaned}`;
+    }
+    return '';
+  };
+
   useEffect(() => {
     loadProperties();
   }, []);
@@ -111,7 +128,7 @@ export default function TourForm({ open, onClose, tour, onSubmit }) {
       ...formData,
       tour_time: tourDateTime.toISOString(),
       client_name: formData.client_name.trim(),
-      phone_number: formData.phone_number.trim(),
+      phone_number: formData.phone_number.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3'),
     };
     onSubmit(submissionData);
   };
@@ -136,8 +153,15 @@ export default function TourForm({ open, onClose, tour, onSubmit }) {
                 fullWidth
                 label="Phone Number"
                 value={formData.phone_number}
-                onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
+                onChange={(e) => {
+                  const formatted = formatPhoneNumber(e.target.value);
+                  setFormData({ ...formData, phone_number: formatted });
+                }}
+                placeholder="(555) 555-5555"
                 required
+                inputProps={{
+                  maxLength: 14  // (XXX) XXX-XXXX
+                }}
               />
             </Grid>
             <Grid item xs={12}>
