@@ -66,7 +66,7 @@ export default function BootAnimation({ onComplete }) {
 
   useEffect(() => {
     // 0.5% chance for easter egg
-    if (Math.random() < 0.005) {
+    if (Math.random() < 0.025) {
       const randomEgg = easterEggs[Math.floor(Math.random() * easterEggs.length)];
       setContent(randomEgg);
     }
