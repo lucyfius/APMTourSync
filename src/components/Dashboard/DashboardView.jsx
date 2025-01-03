@@ -59,9 +59,29 @@ export default function DashboardView() {
       const recent = tours
         .filter(t => (!t.status || t.status === 'scheduled'))
         .sort((a, b) => {
-          const dateA = new Date(a.tour_time);
-          const dateB = new Date(b.tour_time);
-          return dateB - dateA;
+          let dateA = new Date(a.tour_time);
+          let dateB = new Date(b.tour_time);
+          
+          // If date is invalid, try parsing from separate date and time fields
+          if (isNaN(dateA.getTime()) && a.date && a.time) {
+            const [yearA, monthA, dayA] = a.date.split('-');
+            const [hourA, minuteA] = a.time.split(':');
+            dateA = new Date(yearA, monthA - 1, dayA, hourA, minuteA);
+          }
+          
+          if (isNaN(dateB.getTime()) && b.date && b.time) {
+            const [yearB, monthB, dayB] = b.date.split('-');
+            const [hourB, minuteB] = b.time.split(':');
+            dateB = new Date(yearB, monthB - 1, dayB, hourB, minuteB);
+          }
+          
+          // Ensure both dates are valid
+          if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
+            return isNaN(dateA.getTime()) ? 1 : -1;
+          }
+          
+          // Compare timestamps for sorting
+          return dateA.getTime() - dateB.getTime();
         })
         .slice(0, 5);
       
