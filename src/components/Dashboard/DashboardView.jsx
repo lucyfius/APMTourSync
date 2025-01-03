@@ -9,11 +9,15 @@ import {
   ListItemText,
   Divider,
   Chip,
-  Stack
+  Stack,
+  IconButton
 } from '@mui/material';
 import { format } from 'date-fns';
 import database from '../../utils/database';
 import StatsCard from './StatsCard';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import TourForm from '../Tours/TourForm';
 
 const statusColors = {
   scheduled: 'primary',
@@ -30,6 +34,8 @@ export default function DashboardView() {
     cancelledTours: 0
   });
   const [recentTours, setRecentTours] = useState([]);
+  const [openForm, setOpenForm] = useState(false);
+  const [selectedTour, setSelectedTour] = useState(null);
 
   useEffect(() => {
     loadDashboardData();
@@ -45,8 +51,20 @@ export default function DashboardView() {
       const stats = {
         totalTours: tours.length,
         upcomingTours: tours.filter(t => {
-          const tourDate = new Date(t.tour_time);
-          return !isNaN(tourDate.getTime()) && 
+          let tourDate = null;
+          
+          if (t.tour_time) {
+            // Handle new format with ISO string
+            tourDate = new Date(t.tour_time);
+          } else if (t.date && t.time) {
+            // Handle old format with separate date and time
+            const [year, month, day] = t.date.split('-');
+            const [hour, minute] = t.time.split(':');
+            tourDate = new Date(year, month - 1, day, hour, minute);
+          }
+
+          return tourDate && 
+                 !isNaN(tourDate.getTime()) && 
                  tourDate > now && 
                  (!t.status || t.status === 'scheduled');
         }).length,
@@ -57,12 +75,41 @@ export default function DashboardView() {
 
       // Get recent tours - show all scheduled tours regardless of date
       const recent = tours
-        .filter(t => (!t.status || t.status === 'scheduled'))
+        .filter(t => {
+          // Check if tour is scheduled
+          const isScheduled = !t.status || t.status === 'scheduled';
+          
+          // Get tour date
+          let tourDate = null;
+          if (t.tour_time) {
+            tourDate = new Date(t.tour_time);
+          } else if (t.date && t.time) {
+            const [year, month, day] = t.date.split('-');
+            const [hour, minute] = t.time.split(':');
+            tourDate = new Date(year, month - 1, day, hour, minute);
+          }
+
+          // Check if tour is in the future
+          const now = new Date();
+          const isFuture = tourDate && !isNaN(tourDate.getTime()) && tourDate > now;
+
+          // Debug logging
+          console.log('Tour:', {
+            client: t.client_name,
+            date: t.date,
+            time: t.time,
+            tour_time: t.tour_time,
+            parsedDate: tourDate,
+            isScheduled,
+            isFuture
+          });
+
+          return isScheduled && isFuture;
+        })
         .sort((a, b) => {
           let dateA = new Date(a.tour_time);
           let dateB = new Date(b.tour_time);
           
-          // If date is invalid, try parsing from separate date and time fields
           if (isNaN(dateA.getTime()) && a.date && a.time) {
             const [yearA, monthA, dayA] = a.date.split('-');
             const [hourA, minuteA] = a.time.split(':');
@@ -75,21 +122,62 @@ export default function DashboardView() {
             dateB = new Date(yearB, monthB - 1, dayB, hourB, minuteB);
           }
           
-          // Ensure both dates are valid
           if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
             return isNaN(dateA.getTime()) ? 1 : -1;
           }
           
-          // Compare timestamps for sorting
           return dateA.getTime() - dateB.getTime();
-        })
-        .slice(0, 5);
+        });
       
-      console.log('Filtered recent tours:', recent);
+      // Added debug logging
+      console.log('Filtered recent tours:', recent.map(t => ({
+        client: t.client_name,
+        date: t.date,
+        time: t.time,
+        tour_time: t.tour_time,
+        status: t.status
+      })));
+
       setRecentTours(recent);
       
     } catch (error) {
       console.error('Error loading dashboard data:', error);
+    }
+  };
+
+  const handleEdit = (tour) => {
+    setSelectedTour(tour);
+    setOpenForm(true);
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      if (!id) {
+        console.error('Invalid tour ID');
+        return;
+      }
+      await window.api.database.deleteTour(id);
+      await loadDashboardData();
+    } catch (error) {
+      console.error('Error deleting tour:', error);
+    }
+  };
+
+  const handleFormClose = () => {
+    setOpenForm(false);
+    setSelectedTour(null);
+  };
+
+  const handleFormSubmit = async (tourData) => {
+    try {
+      if (selectedTour) {
+        const { _id, created_at, updated_at, ...updateData } = tourData;
+        await window.api.database.updateTour(selectedTour._id, updateData);
+      }
+      await loadDashboardData();
+      handleFormClose();
+    } catch (error) {
+      console.error('Error saving tour:', error);
     }
   };
 
@@ -119,10 +207,8 @@ export default function DashboardView() {
                 let tourDate = null;
                 
                 if (tour.tour_time) {
-                  // Handle new format with ISO string
                   tourDate = new Date(tour.tour_time);
                 } else if (tour.date && tour.time) {
-                  // Handle old format with separate date and time
                   const [year, month, day] = tour.date.split('-');
                   const [hour, minute] = tour.time.split(':');
                   tourDate = new Date(year, month - 1, day, hour, minute);
@@ -144,12 +230,20 @@ export default function DashboardView() {
                       }
                     }}
                     secondaryAction={
-                      <Chip
-                        label={tour.status || 'scheduled'}
-                        color={statusColors[tour.status || 'scheduled']}
-                        size="small"
-                        sx={{ minWidth: 85 }}
-                      />
+                      <Box>
+                        <IconButton onClick={() => handleEdit(tour)} size="small">
+                          <EditIcon />
+                        </IconButton>
+                        <IconButton onClick={() => handleDelete(tour._id)} size="small">
+                          <DeleteIcon />
+                        </IconButton>
+                        <Chip
+                          label={tour.status || 'scheduled'}
+                          color={statusColors[tour.status || 'scheduled']}
+                          size="small"
+                          sx={{ ml: 1, minWidth: 85 }}
+                        />
+                      </Box>
                     }
                   >
                     <ListItemText
@@ -161,16 +255,14 @@ export default function DashboardView() {
                       secondary={
                         <Stack spacing={0.5} component="span">
                           <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <span>📍</span> {tour.property_address}
+                            <span>📱</span> {tour.phone_number}
                           </Box>
                           <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <span>🕒</span> {formattedDate}
+                            <span>🏘️</span> {tour.property_address}
                           </Box>
-                          {tour.phone_number && (
-                            <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <span>📱</span> {tour.phone_number}
-                            </Box>
-                          )}
+                          <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <span>📅</span> {formattedDate}
+                          </Box>
                         </Stack>
                       }
                     />
@@ -181,6 +273,13 @@ export default function DashboardView() {
           </Paper>
         </Grid>
       </Grid>
+
+      <TourForm
+        open={openForm}
+        onClose={handleFormClose}
+        onSubmit={handleFormSubmit}
+        tour={selectedTour}
+      />
     </Box>
   );
 }
