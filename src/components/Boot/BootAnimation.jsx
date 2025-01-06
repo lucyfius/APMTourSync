@@ -81,7 +81,7 @@ export default function BootAnimation({ onComplete }) {
   };
 
   useEffect(() => {
-    if (Math.random() < 0.050) {
+    if (Math.random() < 0.035) {
       const easterEggs = [
         {
           logo: getEasterEggPath('easter1.png'),
