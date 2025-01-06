@@ -11,6 +11,9 @@ import TourList from './components/Tours/TourList';
 import PropertyList from './components/Properties/PropertyList';
 import TitleBar from './components/Layout/TitleBar';
 import BootAnimation from './components/Boot/BootAnimation';
+import ReportsView from './components/Reports/ReportsView';
+import ApplicationRequestView from './components/ApplicationRequest/ApplicationRequestView';
+import SettingsView from './components/Settings/SettingsView';
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -72,6 +75,9 @@ function App() {
                 <Route path="/" element={<DashboardView />} />
                 <Route path="/tours" element={<TourList />} />
                 <Route path="/properties" element={<PropertyList />} />
+                <Route path="/reports" element={<ReportsView />} />
+                <Route path="/settings" element={<SettingsView />} />
+                <Route path="/application-request" element={<ApplicationRequestView />} />
               </Routes>
             </Box>
           </Box>

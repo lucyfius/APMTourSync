@@ -10,6 +10,9 @@ import {
   Box,
   styled
 } from '@mui/material';
+import { Link } from 'react-router-dom';
+import AssessmentIcon from '@mui/icons-material/Assessment';
+import DescriptionIcon from '@mui/icons-material/Description';
 
 const DRAWER_WIDTH = 280;
 
@@ -43,8 +46,9 @@ const navItems = [
   { label: 'Dashboard', icon: '📊', path: '/' },
   { label: 'Tours', icon: '🗓️', path: '/tours' },
   { label: 'Properties', icon: '🏘️', path: '/properties' },
-  { label: 'Reports', icon: '📈', path: '/reports' },
-  { label: 'Settings', icon: '⚙️', path: '/settings' }
+  { label: 'Reports', icon: <AssessmentIcon />, path: '/reports' },
+  { label: 'Settings', icon: '⚙️', path: '/settings' },
+  { label: 'Application Request', icon: <DescriptionIcon />, path: '/application-request' }
 ];
 
 function Sidebar() {
